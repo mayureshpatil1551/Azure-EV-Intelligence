@@ -1009,7 +1009,8 @@ r = requests.get(
 )
 r.raise_for_status()
 data = r.json()
-print(f"Payments total: {data['total']}, pages: {data['total_pages']}")
+# print(f"Payments total: {data['total']}, pages: {data['total_pages']}")
+print(f"Payments total: {data['pagination']['total']}, pages: {data['pagination']['total_pages']}")
 print("API auth working correctly.")
 ```
 
