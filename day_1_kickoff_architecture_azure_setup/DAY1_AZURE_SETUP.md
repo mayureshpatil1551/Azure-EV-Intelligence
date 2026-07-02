@@ -816,6 +816,7 @@ tenant_id     = dbutils.secrets.get(scope=SCOPE, key="sp-tenant-id")
 account_name  = dbutils.secrets.get(scope=SCOPE, key="adls-account-name")
 
 # OAuth config — Databricks exchanges client_id + client_secret for a short-lived token
+# Use OAuth authentication to connect to ADLS.
 configs = {
     "fs.azure.account.auth.type": "OAuth",
     "fs.azure.account.oauth.provider.type":
