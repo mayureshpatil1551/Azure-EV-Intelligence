@@ -239,7 +239,7 @@ A Container is a top-level folder inside the storage account. It groups related 
 1. Portal → search **Storage accounts** → **+ Create**
 2. Fill in:
    - **Resource group:** `rg-ev-intelligence-dev`
-   - **Storage account name:** `evdatalakedev` *(must be globally unique, lowercase, no hyphens)*
+   - **Storage account name:** `evdatalakedev1551` *(must be globally unique, lowercase, no hyphens)*
    - **Region:** `Central India`
    - **Performance:** `Standard` ← cost choice
    - **Redundancy:** `LRS (Locally-redundant storage)` ← cost choice
@@ -279,21 +279,21 @@ This saves 50% on Bronze storage after 30 days:
 
 **Single line — create storage account (CMD / PowerShell):**
 ```cmd
-az storage account create --name evdatalakedev --resource-group rg-ev-intelligence-dev --location centralindia --sku Standard_LRS --kind StorageV2 --enable-hierarchical-namespace true --access-tier Cool
+az storage account create --name evdatalakedev1551 --resource-group rg-ev-intelligence-dev --location centralindia --sku Standard_LRS --kind StorageV2 --enable-hierarchical-namespace true --access-tier Cool
 ```
 
 **Single line — create each container (CMD / PowerShell — run 4 times):**
 ```cmd
-az storage container create --name bronze --account-name evdatalakedev --auth-mode login
-az storage container create --name silver --account-name evdatalakedev --auth-mode login
-az storage container create --name gold --account-name evdatalakedev --auth-mode login
-az storage container create --name source --account-name evdatalakedev --auth-mode login
+az storage container create --name bronze --account-name evdatalakedev1551 --auth-mode login
+az storage container create --name silver --account-name evdatalakedev1551 --auth-mode login
+az storage container create --name gold --account-name evdatalakedev1551 --auth-mode login
+az storage container create --name source --account-name evdatalakedev1551 --auth-mode login
 ```
 
 **Multi-line (bash / Git Bash only):**
 ```bash
 az storage account create \
-  --name evdatalakedev \
+  --name evdatalakedev1551 \
   --resource-group rg-ev-intelligence-dev \
   --location centralindia \
   --sku Standard_LRS \
@@ -304,7 +304,7 @@ az storage account create \
 for container in bronze silver gold source; do
   az storage container create \
     --name $container \
-    --account-name evdatalakedev \
+    --account-name evdatalakedev1551 \
     --auth-mode login
 done
 ```
@@ -332,7 +332,7 @@ The VoltGrid API uses Django REST Framework token auth — there is no direct da
 1. Portal → search **Key vaults** → **+ Create**
 2. Fill in:
    - **Resource group:** `rg-ev-intelligence-dev`
-   - **Key vault name:** `kv-ev-intelligence-dev` *(globally unique)*
+   - **Key vault name:** `kv-ev-int-dev` *(globally unique)*
    - **Region:** `Central India`
    - **Pricing tier:** `Standard` ← cost choice
 3. **Access configuration** tab:
@@ -345,7 +345,7 @@ The VoltGrid API uses Django REST Framework token auth — there is no direct da
 > `Forbidden: Caller is not authorized to perform action — ForbiddenByRbac`
 
 **Via Portal:**
-1. Portal → **Key vaults** → `kv-ev-intelligence-dev`
+1. Portal → **Key vaults** → `kv-ev-int-dev`
 2. Left menu → **Access Control (IAM)**
 3. Click **+ Add** → **Add role assignment**
 4. **Role** tab: search `Key Vault Secrets Officer` → select → click **Next**
@@ -361,7 +361,7 @@ az ad signed-in-user show --query id -o tsv
 ```
 Copy the output (your object ID), then:
 ```cmd
-az keyvault show --name kv-ev-intelligence-dev --resource-group rg-ev-intelligence-dev --query id -o tsv
+az keyvault show --name kv-ev-int-dev --resource-group rg-ev-intelligence-dev --query id -o tsv
 ```
 Copy the output (Key Vault resource ID), then:
 ```cmd
@@ -388,7 +388,7 @@ Add these secrets now (you will add more on Day 2):
 | `voltgrid-api-base-url` | `https://ev-project-navy-mu.vercel.app` | VoltGrid API host |
 | `voltgrid-username` | `voltgrid_demo` | API login username |
 | `voltgrid-password` | `EVcharge@AU2025` | API login password |
-| `adls-account-name` | `evdatalakedev` | Storage account name (not sensitive, but centralised) |
+| `adls-account-name` | `evdatalakedev1551` | Storage account name (not sensitive, but centralised) |
 | `sp-client-id` | *(fill after Part 5)* | Service Principal App ID |
 | `sp-client-secret` | *(fill after Part 5)* | Service Principal password |
 | `sp-tenant-id` | *(fill after Part 5)* | Azure Entra ID tenant |
@@ -402,16 +402,16 @@ Add these secrets now (you will add more on Day 2):
 
 **Single line (CMD / PowerShell — copy-paste each line):**
 ```cmd
-az keyvault create --name kv-ev-intelligence-dev --resource-group rg-ev-intelligence-dev --location centralindia --sku standard
-az keyvault secret set --vault-name kv-ev-intelligence-dev --name "voltgrid-api-base-url" --value "https://ev-project-navy-mu.vercel.app"
-az keyvault secret set --vault-name kv-ev-intelligence-dev --name "voltgrid-username" --value "voltgrid_demo"
-az keyvault secret set --vault-name kv-ev-intelligence-dev --name "voltgrid-password" --value "EVcharge@AU2025"
-az keyvault secret set --vault-name kv-ev-intelligence-dev --name "adls-account-name" --value "evdatalakedev"
+az keyvault create --name kv-ev-int-dev --resource-group rg-ev-intelligence-dev --location centralindia --sku standard
+az keyvault secret set --vault-name kv-ev-int-dev --name "voltgrid-api-base-url" --value "https://ev-project-navy-mu.vercel.app"
+az keyvault secret set --vault-name kv-ev-int-dev --name "voltgrid-username" --value "voltgrid_demo"
+az keyvault secret set --vault-name kv-ev-int-dev --name "voltgrid-password" --value "EVcharge@AU2025"
+az keyvault secret set --vault-name kv-ev-int-dev --name "adls-account-name" --value "evdatalakedev1551"
 ```
 
 **Multi-line (bash / Git Bash only):**
 ```bash
-KV="kv-ev-intelligence-dev"
+KV="kv-ev-int-dev"
 
 az keyvault create \
   --name $KV \
@@ -422,7 +422,7 @@ az keyvault create \
 az keyvault secret set --vault-name $KV --name "voltgrid-api-base-url" --value "https://ev-project-navy-mu.vercel.app"
 az keyvault secret set --vault-name $KV --name "voltgrid-username"     --value "voltgrid_demo"
 az keyvault secret set --vault-name $KV --name "voltgrid-password"     --value "EVcharge@AU2025"
-az keyvault secret set --vault-name $KV --name "adls-account-name"     --value "evdatalakedev"
+az keyvault secret set --vault-name $KV --name "adls-account-name"     --value "evdatalakedev1551"
 ```
 
 ---
@@ -435,7 +435,7 @@ az keyvault secret set --vault-name $KV --name "adls-account-name"     --value "
 A Service Principal is a non-human identity — like a robot user account for your application. Instead of Databricks logging in as *you* (a human), it logs in as the Service Principal. This is safer because: (a) the SP only has the permissions you explicitly gave it, (b) if the SP credential is compromised, you rotate it without affecting any human accounts, (c) human accounts can be disabled or have passwords changed, which would break pipelines.
 
 **What is RBAC?**
-RBAC = Role-Based Access Control. After creating the SP, you assign it roles on specific resources. A role says "what actions are allowed". A scope says "on which resource". Example: SP + role `Storage Blob Data Contributor` + scope `evdatalakedev` = "the SP can read and write blobs in that storage account, but cannot delete the account itself."
+RBAC = Role-Based Access Control. After creating the SP, you assign it roles on specific resources. A role says "what actions are allowed". A scope says "on which resource". Example: SP + role `Storage Blob Data Contributor` + scope `evdatalakedev1551` = "the SP can read and write blobs in that storage account, but cannot delete the account itself."
 
 **What values will you get from this step?**
 After creating the SP you will have 3 values that go into Key Vault:
@@ -489,7 +489,7 @@ This copied value is your `sp-client-secret`.
 
 #### Step 4 — Store all 3 values in Key Vault
 
-1. Go to Key Vault → `kv-ev-intelligence-dev` → left menu **Secrets**
+1. Go to Key Vault → `kv-ev-int-dev` → left menu **Secrets**
 2. Click **+ Generate/Import** for each secret:
 
 | Secret Name | Value to paste |
@@ -534,14 +534,14 @@ Store all 3 values in Key Vault immediately:
 
 **Single line (CMD / PowerShell):**
 ```cmd
-az keyvault secret set --vault-name kv-ev-intelligence-dev --name "sp-client-id" --value "<appId from output>"
-az keyvault secret set --vault-name kv-ev-intelligence-dev --name "sp-client-secret" --value "<password from output>"
-az keyvault secret set --vault-name kv-ev-intelligence-dev --name "sp-tenant-id" --value "<tenant from output>"
+az keyvault secret set --vault-name kv-ev-int-dev --name "sp-client-id" --value "<appId from output>"
+az keyvault secret set --vault-name kv-ev-int-dev --name "sp-client-secret" --value "<password from output>"
+az keyvault secret set --vault-name kv-ev-int-dev --name "sp-tenant-id" --value "<tenant from output>"
 ```
 
 **Multi-line (bash / Git Bash only):**
 ```bash
-KV="kv-ev-intelligence-dev"
+KV="kv-ev-int-dev"
 az keyvault secret set --vault-name $KV --name "sp-client-id"     --value "<appId from output>"
 az keyvault secret set --vault-name $KV --name "sp-client-secret" --value "<password from output>"
 az keyvault secret set --vault-name $KV --name "sp-tenant-id"     --value "<tenant from output>"
@@ -566,7 +566,7 @@ We use `Storage Blob Data Contributor` — enough for Databricks to read and wri
 #### Via Portal:
 
 1. Go to [https://portal.azure.com](https://portal.azure.com)
-2. Search **Storage accounts** → click `evdatalakedev`
+2. Search **Storage accounts** → click `evdatalakedev1551`
 3. In the left menu, click **Access Control (IAM)**
 4. Click **+ Add** → **Add role assignment**
 5. On the **Role** tab: search for `Storage Blob Data Contributor` → select it → click **Next**
@@ -577,7 +577,7 @@ We use `Storage Blob Data Contributor` — enough for Databricks to read and wri
 7. Click **Review + assign** → **Review + assign** again to confirm
 
 To verify it worked:
-1. On the same `evdatalakedev` → **Access Control (IAM)** page
+1. On the same `evdatalakedev1551` → **Access Control (IAM)** page
 2. Click **Role assignments** tab
 3. You should see `sp-ev-intelligence-dev` listed under `Storage Blob Data Contributor`
 
@@ -601,9 +601,9 @@ Copy the output — this is your `SP_OID`
 
 **Step 3 — get the Storage Account resource ID:**
 ```cmd
-az storage account show --name evdatalakedev --resource-group rg-ev-intelligence-dev --query id -o tsv
+az storage account show --name evdatalakedev1551 --resource-group rg-ev-intelligence-dev --query id -o tsv
 ```
-Copy the output — this is your `STORAGE_ID` (looks like `/subscriptions/81dd57e1-.../providers/Microsoft.Storage/storageAccounts/evdatalakedev`)
+Copy the output — this is your `STORAGE_ID` (looks like `/subscriptions/81dd57e1-.../providers/Microsoft.Storage/storageAccounts/evdatalakedev1551`)
 
 **Step 4 — assign the role:**
 ```cmd
@@ -618,7 +618,7 @@ az role assignment list --scope <STORAGE_ID from Step 3> --query "[].{Role:roleD
 **Multi-line (bash / Git Bash only):**
 ```bash
 STORAGE_ID=$(az storage account show \
-  --name evdatalakedev \
+  --name evdatalakedev1551 \
   --resource-group rg-ev-intelligence-dev \
   --query id -o tsv)
 
@@ -704,7 +704,7 @@ az role assignment list --scope $STORAGE_ID --query "[].{Role:roleDefinitionName
 > **Important:** Azure Databricks workspace does not expose a managed identity in the Portal UI. Instead, Databricks accesses Key Vault through a global **AzureDatabricks** enterprise application. You assign the role to that application.
 
 **Via Portal:**
-1. Portal → **Key vaults** → `kv-ev-intelligence-dev` → left menu **Access Control (IAM)**
+1. Portal → **Key vaults** → `kv-ev-int-dev` → left menu **Access Control (IAM)**
 2. Click **+ Add** → **Add role assignment**
 3. Role: `Key Vault Secrets User` → **Next**
 4. Members: **+ Select members** → search **`AzureDatabricks`** → select it → **Review + assign**
@@ -720,7 +720,7 @@ Copy the output, then:
 
 **Step 2 — get the Key Vault resource ID:**
 ```cmd
-az keyvault show --name kv-ev-intelligence-dev --resource-group rg-ev-intelligence-dev --query id -o tsv
+az keyvault show --name kv-ev-int-dev --resource-group rg-ev-intelligence-dev --query id -o tsv
 ```
 Copy the output, then:
 
@@ -741,15 +741,15 @@ A Secret Scope is a named link between your Databricks workspace and an Azure Ke
 
 **Value 1 — Vault URI**
 1. Go to [https://portal.azure.com](https://portal.azure.com)
-2. Search **Key vaults** → click `kv-ev-intelligence-dev`
+2. Search **Key vaults** → click `kv-ev-int-dev`
 3. In the left menu, click **Properties** (under Settings)
 4. Copy the **Vault URI** — it looks like:
-   `https://kv-ev-intelligence-dev.vault.azure.net/`
+   `https://kv-ev-int-dev.vault.azure.net/`
 
 **Value 2 — Resource ID**
 1. On the same **Properties** page (you are already there)
 2. Copy the **Resource ID** — it looks like:
-   `/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg-ev-intelligence-dev/providers/Microsoft.KeyVault/vaults/kv-ev-intelligence-dev`
+   `/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg-ev-intelligence-dev/providers/Microsoft.KeyVault/vaults/kv-ev-int-dev`
 
 **Now create the Secret Scope:**
 
@@ -900,7 +900,7 @@ It is a long base64-encoded string (looks like `AbCdEf1234...==`) that gives ful
 
 **Step 1 — Get the access key from the Portal:**
 1. Go to [https://portal.azure.com](https://portal.azure.com)
-2. Search **Storage accounts** → click `evdatalakedev`
+2. Search **Storage accounts** → click `evdatalakedev1551`
 3. In the left menu, click **Access keys** (under Security + networking)
 4. Click **Show** next to **key1**
 5. Copy the full **Key** value (a long string ending in `==`)
@@ -908,7 +908,7 @@ It is a long base64-encoded string (looks like `AbCdEf1234...==`) that gives ful
 **Step 2 — Get the access key via CLI:**
 ```bash
 az storage account keys list \
-  --account-name evdatalakedev \
+  --account-name evdatalakedev1551 \
   --resource-group rg-ev-intelligence-dev \
   --query "[0].value" -o tsv
 # Outputs the key1 value directly
@@ -917,7 +917,7 @@ az storage account keys list \
 **Step 3 — Store it in Key Vault:**
 
 Via Portal:
-1. Go to Key Vault → `kv-ev-intelligence-dev` → left menu **Secrets**
+1. Go to Key Vault → `kv-ev-int-dev` → left menu **Secrets**
 2. Click **+ Generate/Import**
 3. Fill in:
    - **Name:** `adls-account-key`
@@ -927,12 +927,12 @@ Via Portal:
 Via CLI:
 ```bash
 KEY=$(az storage account keys list \
-  --account-name evdatalakedev \
+  --account-name evdatalakedev1551 \
   --resource-group rg-ev-intelligence-dev \
   --query "[0].value" -o tsv)
 
 az keyvault secret set \
-  --vault-name kv-ev-intelligence-dev \
+  --vault-name kv-ev-int-dev \
   --name "adls-account-key" \
   --value "$KEY"
 ```
@@ -1172,7 +1172,7 @@ source/
 > **SAS token will be shared during the session.** Add it to Key Vault as soon as you receive it — the notebook reads it automatically.
 
 **Via Portal:**
-1. Portal → **Key vaults** → `kv-ev-intelligence-dev` → **Secrets** → **+ Generate/Import**
+1. Portal → **Key vaults** → `kv-ev-int-dev` → **Secrets** → **+ Generate/Import**
 2. Add these 3 secrets one by one:
 
 | Secret Name | Value | Notes |
@@ -1183,9 +1183,9 @@ source/
 
 **Via CLI:**
 ```cmd
-az keyvault secret set --vault-name kv-ev-intelligence-dev --name "source-storage-account" --value "dataenggdailystorage"
-az keyvault secret set --vault-name kv-ev-intelligence-dev --name "source-container" --value "source"
-az keyvault secret set --vault-name kv-ev-intelligence-dev --name "source-sas-token" --value "<paste SAS token here>"
+az keyvault secret set --vault-name kv-ev-int-dev --name "source-storage-account" --value "dataenggdailystorage"
+az keyvault secret set --vault-name kv-ev-int-dev --name "source-container" --value "source"
+az keyvault secret set --vault-name kv-ev-int-dev --name "source-sas-token" --value "<paste SAS token here>"
 ```
 
 > **SAS token format:** `se=2027-07-30&sp=rl&spr=https&sv=2026-04-06&sr=c&sig=xxxxx`
@@ -1319,15 +1319,15 @@ If you forget, the cluster auto-terminates after 15 minutes — but do not rely 
 - [ ] Budget alert set at ₹1,500/month
 - [ ] All 6 resource providers registered and showing `Registered` (KeyVault, Storage, Databricks, EventHub, DataFactory, ManagedIdentity)
 - [ ] Resource Group `rg-ev-intelligence-dev` created in Central India
-- [ ] Storage Account `evdatalakedev` created (Standard LRS, hierarchical namespace ON)
+- [ ] Storage Account `evdatalakedev1551` created (Standard LRS, hierarchical namespace ON)
 - [ ] Containers: `bronze`, `silver`, `gold`, `source` created
 - [ ] Lifecycle rule set (move to Cool after 30 days, Archive after 90)
-- [ ] Key Vault `kv-ev-intelligence-dev` created (Standard tier, RBAC permission model)
+- [ ] Key Vault `kv-ev-int-dev` created (Standard tier, RBAC permission model)
 - [ ] Your account assigned `Key Vault Secrets Officer` role on the Key Vault
 - [ ] Secrets added: `voltgrid-api-base-url`, `voltgrid-username`, `voltgrid-password`, `adls-account-name`
 - [ ] Service Principal `sp-ev-intelligence-dev` created
 - [ ] SP credentials stored in Key Vault (`sp-client-id`, `sp-client-secret`, `sp-tenant-id`)
-- [ ] SP has **Storage Blob Data Contributor** role on `evdatalakedev`
+- [ ] SP has **Storage Blob Data Contributor** role on `evdatalakedev1551`
 - [ ] Databricks workspace `dbw-ev-intelligence-dev` created (Trial tier)
 - [ ] Cluster `dev-cluster` created — Single Node, DS3_v2, Photon OFF, auto-terminate 15 min
 - [ ] Databricks workspace managed identity assigned `Key Vault Secrets User` role on Key Vault
@@ -1348,8 +1348,8 @@ If you forget, the cluster auto-terminates after 15 minutes — but do not rely 
 | `az login` fails | Try `az login --use-device-code` |
 | `MissingSubscriptionRegistration` on any resource | Run `az provider register --namespace <e.g. Microsoft.KeyVault>` then wait 1–2 min and retry |
 | `Forbidden: ForbiddenByRbac` on `az keyvault secret set` | Your account needs `Key Vault Secrets Officer` role — assign it via IAM on the Key Vault, wait 1–2 min, then retry |
-| `Conflict: ObjectIsDeletedButRecoverable` on `az keyvault secret set` | Secret was previously deleted but is still in soft-delete state. Recover it first: `az keyvault secret recover --vault-name kv-ev-intelligence-dev --name "<secret-name>"` then retry the set command. Or purge it: `az keyvault secret purge --vault-name kv-ev-intelligence-dev --name "<secret-name>"` then set fresh |
-| Storage account name taken | Add your initials: `evdatalakedevhs` |
+| `Conflict: ObjectIsDeletedButRecoverable` on `az keyvault secret set` | Secret was previously deleted but is still in soft-delete state. Recover it first: `az keyvault secret recover --vault-name kv-ev-int-dev --name "<secret-name>"` then retry the set command. Or purge it: `az keyvault secret purge --vault-name kv-ev-int-dev --name "<secret-name>"` then set fresh |
+| Storage account name taken | Add your initials: `evdatalakedev1551hs` |
 | Key Vault name taken | Add random suffix: `kv-ev-dev-01` |
 | Mount fails with 403 | SP does not have Storage Blob Data Contributor — re-check IAM |
 | Mount fails with "invalid client secret" | Check `sp-client-secret` in Key Vault is the exact value output when you created the SP |
