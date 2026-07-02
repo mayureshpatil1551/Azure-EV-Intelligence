@@ -807,7 +807,9 @@ pip install databricks-cli
 
 ### 7.2 Mount using Service Principal OAuth
 ```python
-# All secrets come from Key Vault via the secret scope — no hardcoded values
+# =====================================================
+# 1. LOAD SECRETS FROM KEY VAULT (Databricks Secret Scope)
+# =====================================================
 SCOPE = "kv-ev-scope"
 
 client_id     = dbutils.secrets.get(scope=SCOPE, key="sp-client-id")
@@ -815,33 +817,63 @@ client_secret = dbutils.secrets.get(scope=SCOPE, key="sp-client-secret")
 tenant_id     = dbutils.secrets.get(scope=SCOPE, key="sp-tenant-id")
 account_name  = dbutils.secrets.get(scope=SCOPE, key="adls-account-name")
 
-# OAuth config — Databricks exchanges client_id + client_secret for a short-lived token
-# Use OAuth authentication to connect to ADLS.
+
+# =====================================================
+# 2. CONFIGURE SP AUTH FOR ADLS GEN2 (ABFSS)
+# =====================================================
 configs = {
-    "fs.azure.account.auth.type": "OAuth",
-    "fs.azure.account.oauth.provider.type":
+    f"fs.azure.account.auth.type.{account_name}.dfs.core.windows.net": "OAuth",
+    f"fs.azure.account.oauth.provider.type.{account_name}.dfs.core.windows.net":
         "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-    "fs.azure.account.oauth2.client.id": client_id,
-    "fs.azure.account.oauth2.client.secret": client_secret,
-    "fs.azure.account.oauth2.client.endpoint":
+    f"fs.azure.account.oauth2.client.id.{account_name}.dfs.core.windows.net": client_id,
+    f"fs.azure.account.oauth2.client.secret.{account_name}.dfs.core.windows.net": client_secret,
+    f"fs.azure.account.oauth2.client.endpoint.{account_name}.dfs.core.windows.net":
         f"https://login.microsoftonline.com/{tenant_id}/oauth2/token",
 }
 
-# Mount each container
-for container in ["bronze", "silver", "gold", "source"]:
-    mount_point = f"/mnt/{container}"
-    if not any(m.mountPoint == mount_point for m in dbutils.fs.mounts()):
-        dbutils.fs.mount(
-            source=f"abfss://{container}@{account_name}.dfs.core.windows.net/",
-            mount_point=mount_point,
-            extra_configs=configs,
-        )
-        print(f"Mounted  : {container}")
-    else:
-        print(f"Already mounted: {container}")
+for k, v in configs.items():
+    spark.conf.set(k, v)
 
-# Verify
-display(dbutils.fs.ls("/mnt/bronze"))
+
+# =====================================================
+# 3. DEFINE CONTAINERS (BRONZE / SILVER / GOLD / SOURCE)
+# =====================================================
+containers = ["bronze", "silver", "gold", "source"]
+
+base_path = f"abfss://{{container}}@{account_name}.dfs.core.windows.net/"
+
+
+# =====================================================
+# 4. VERIFY ACCESS (NO MOUNTS - UC SAFE)
+# =====================================================
+accessible = []
+failed = []
+
+for container in containers:
+    path = base_path.format(container=container)
+
+    try:
+        # Instead of mounting → we just validate access
+        dbutils.fs.ls(path)
+        print(f"ACCESS OK  : {path}")
+        accessible.append(container)
+
+    except Exception as e:
+        print(f"FAILED     : {path}")
+        print(e)
+        failed.append(container)
+
+
+# =====================================================
+# 5. SUMMARY
+# =====================================================
+print("\n================ SUMMARY ================")
+print("Accessible containers:", accessible)
+print("Failed containers    :", failed)
+
+
+if failed:
+    raise Exception(f"Storage access failed for: {failed}")
 ```
 
 Run the notebook — if you see no errors, all 4 containers are mounted.
