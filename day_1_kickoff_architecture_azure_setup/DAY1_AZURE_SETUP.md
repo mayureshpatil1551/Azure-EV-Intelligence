@@ -756,9 +756,9 @@ A Secret Scope is a named link between your Databricks workspace and an Azure Ke
 > The Secret Scope creation page is not in the normal Databricks left menu — it is only accessible via a special URL.
 
 1. Copy your Databricks workspace URL from the browser — it looks like:
-   `https://adb-1234567890123456.7.azuredatabricks.net`
+   `https://adb-7405611748315321.1.azuredatabricks.net`
 2. Add `#secrets/createScope` at the end and open it:
-   `https://adb-1234567890123456.7.azuredatabricks.net#secrets/createScope`
+   `https://adb-7405611748315321.1.azuredatabricks.net#secrets/createScope`
 3. You will see a form. Fill in:
    - **Scope Name:** `kv-ev-scope`
    - **Manage Principal:** `All Users`
