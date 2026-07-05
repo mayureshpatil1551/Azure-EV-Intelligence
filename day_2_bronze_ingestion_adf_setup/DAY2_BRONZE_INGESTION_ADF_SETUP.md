@@ -32,7 +32,7 @@ Read this once before you start. These are the new services added on Day 2.
 
 ## What You Will Have at the End of Day 2
 
-- Azure Data Factory instance `adf-ev-intelligence-dev` provisioned and connected to Key Vault
+- Azure Data Factory instance `adf-ev-intelligence-dev-1551` provisioned and connected to Key Vault
 - ADF Managed Identity has write access to ADLS Gen2
 - 3 ADF linked services: Key Vault, VoltGrid API (REST), ADLS Gen2 (Managed Identity)
 - ADF pipeline `pl_bronze_api_payments`: authenticates to VoltGrid API, copies one page of payments as raw JSON to Bronze
@@ -51,7 +51,7 @@ VoltGrid API
                          →  raw JSON  →  ADF Copy Activity
                                                     ↓
                                bronze/api/payments/raw/payments.json
-                               (abfss://bronze@evdatalakedev.dfs.core.windows.net/)
+                               (abfss://bronze@evdatalakedev1551.dfs.core.windows.net/)
 
 Unity Catalog (Databricks)
   Access Connector  →  Storage Credential  →  External Locations
@@ -112,7 +112,7 @@ One ADF instance = one factory. It is the container for all your pipelines, link
 4. Fill in the **Basics** tab:
    - **Subscription:** your subscription
    - **Resource group:** `rg-ev-intelligence-dev`
-   - **Name:** `adf-ev-intelligence-dev` *(must be globally unique)*
+   - **Name:** `adf-ev-intelligence-dev-1551` *(must be globally unique)*
    - **Region:** `Central India`
    - **Version:** `V2` ← always V2, V1 is retired
 5. Click **Git configuration** tab:
@@ -121,7 +121,7 @@ One ADF instance = one factory. It is the container for all your pipelines, link
 7. Wait ~1 minute for deployment to complete
 8. Click **Go to resource**
 
-> **If the name is taken:** Add your initials — `adf-ev-intelligence-dev-hs`. The name must be globally unique across all Azure customers.
+> **If the name is taken:** Add your initials — `adf-ev-intelligence-dev-1551-hs`. The name must be globally unique across all Azure customers.
 
 ### 1.2 Launch ADF Studio
 
@@ -138,27 +138,27 @@ Once the resource is deployed:
 
 **Single line (CMD / PowerShell — copy-paste this):**
 ```cmd
-az datafactory create --resource-group rg-ev-intelligence-dev --factory-name adf-ev-intelligence-dev --location centralindia
+az datafactory create --resource-group rg-ev-intelligence-dev --factory-name adf-ev-intelligence-dev-1551 --location centralindia
 ```
 
 **Multi-line (bash / Git Bash only):**
 ```bash
 az datafactory create \
   --resource-group rg-ev-intelligence-dev \
-  --factory-name adf-ev-intelligence-dev \
+  --factory-name adf-ev-intelligence-dev-1551 \
   --location centralindia
 ```
 
 **Verify it was created:**
 ```cmd
-az datafactory show --resource-group rg-ev-intelligence-dev --factory-name adf-ev-intelligence-dev --query "{Name:name, Location:location, State:provisioningState}" -o table
+az datafactory show --resource-group rg-ev-intelligence-dev --factory-name adf-ev-intelligence-dev-1551 --query "{Name:name, Location:location, State:provisioningState}" -o table
 ```
 
 Expected output:
 ```
 Name                         Location       State
 ---------------------------  -------------  ---------
-adf-ev-intelligence-dev      centralindia   Succeeded
+adf-ev-intelligence-dev-1551      centralindia   Succeeded
 ```
 
 ---
@@ -171,7 +171,7 @@ adf-ev-intelligence-dev      centralindia   Succeeded
 When you create an ADF instance, Azure automatically creates a Managed Identity for it — like a service account that Azure manages completely. It has a unique Object ID. You never see or manage a password for it. You assign it RBAC roles, and ADF can then access resources (like ADLS Gen2) using that identity at runtime.
 
 **Why this step is required:**
-ADF's Copy Activity will write Delta files to your `evdatalakedev` storage account. Without this role assignment, every Copy Activity will fail with `403 Forbidden` even if your pipelines are configured correctly.
+ADF's Copy Activity will write Delta files to your `evdatalakedev1551` storage account. Without this role assignment, every Copy Activity will fail with `403 Forbidden` even if your pipelines are configured correctly.
 
 **What role to assign:**
 
@@ -186,12 +186,12 @@ Use `Storage Blob Data Contributor` — enough for ADF to write Bronze files.
 ### 2.1 Via Azure Portal
 
 **Step 1 — Find the ADF Managed Identity Object ID:**
-1. Portal → search **Data factories** → click `adf-ev-intelligence-dev`
+1. Portal → search **Data factories** → click `adf-ev-intelligence-dev-1551`
 2. In the left menu, click **Properties** (under Settings)
 3. Copy the **Managed Identity Object ID** — looks like `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
 
 **Step 2 — Assign the role on ADLS Gen2:**
-1. Portal → search **Storage accounts** → click `evdatalakedev`
+1. Portal → search **Storage accounts** → click `evdatalakedev1551`
 2. Left menu → **Access Control (IAM)**
 3. Click **+ Add** → **Add role assignment**
 4. **Role** tab: search `Storage Blob Data Contributor` → select → **Next**
@@ -199,14 +199,14 @@ Use `Storage Blob Data Contributor` — enough for ADF to write Bronze files.
    - **Assign access to:** `Managed identity`
    - Click **+ Select members**
    - **Managed identity:** select `Data factory (V2)` from the dropdown
-   - Select `adf-ev-intelligence-dev`
+   - Select `adf-ev-intelligence-dev-1551`
    - Click **Select**
 6. Click **Review + assign** → **Review + assign** again to confirm
 
 **Verify:**
-1. On the same `evdatalakedev` → **Access Control (IAM)** page
+1. On the same `evdatalakedev1551` → **Access Control (IAM)** page
 2. Click **Role assignments** tab
-3. You should see `adf-ev-intelligence-dev` under `Storage Blob Data Contributor`
+3. You should see `adf-ev-intelligence-dev-1551` under `Storage Blob Data Contributor`
 
 ### 2.2 Via CLI
 
@@ -214,13 +214,13 @@ Use `Storage Blob Data Contributor` — enough for ADF to write Bronze files.
 
 **Step 1 — Get the ADF Managed Identity Object ID:**
 ```cmd
-az datafactory show --resource-group rg-ev-intelligence-dev --factory-name adf-ev-intelligence-dev --query identity.principalId -o tsv
+az datafactory show --resource-group rg-ev-intelligence-dev --factory-name adf-ev-intelligence-dev-1551 --query identity.principalId -o tsv
 ```
 Copy the output — this is your `MI_OID`.
 
 **Step 2 — Get the Storage Account resource ID:**
 ```cmd
-az storage account show --name evdatalakedev --resource-group rg-ev-intelligence-dev --query id -o tsv
+az storage account show --name evdatalakedev1551 --resource-group rg-ev-intelligence-dev --query id -o tsv
 ```
 Copy the output — this is your `STORAGE_ID`.
 
@@ -238,11 +238,11 @@ az role assignment list --scope <STORAGE_ID from Step 2> --query "[].{Role:roleD
 ```bash
 MI_OID=$(az datafactory show \
   --resource-group rg-ev-intelligence-dev \
-  --factory-name adf-ev-intelligence-dev \
+  --factory-name adf-ev-intelligence-dev-1551 \
   --query identity.principalId -o tsv)
 
 STORAGE_ID=$(az storage account show \
-  --name evdatalakedev \
+  --name evdatalakedev1551 \
   --resource-group rg-ev-intelligence-dev \
   --query id -o tsv)
 
@@ -274,7 +274,7 @@ ADF will use Key Vault-backed secrets in its linked services (e.g. the VoltGrid 
 4. **Members** tab:
    - **Assign access to:** `Managed identity`
    - Click **+ Select members**
-   - **Managed identity:** select `Data factory (V2)` → select `adf-ev-intelligence-dev`
+   - **Managed identity:** select `Data factory (V2)` → select `adf-ev-intelligence-dev-1551`
    - Click **Select**
 5. Click **Review + assign** → **Review + assign**
 6. Wait **1–2 minutes** before testing any ADF pipeline that references Key Vault
@@ -283,7 +283,7 @@ ADF will use Key Vault-backed secrets in its linked services (e.g. the VoltGrid 
 
 **Step 1 — Get the ADF Managed Identity Object ID** (same as Part 2 Step 1 — skip if you already have it):
 ```cmd
-az datafactory show --resource-group rg-ev-intelligence-dev --factory-name adf-ev-intelligence-dev --query identity.principalId -o tsv
+az datafactory show --resource-group rg-ev-intelligence-dev --factory-name adf-ev-intelligence-dev-1551 --query identity.principalId -o tsv
 ```
 
 **Step 2 — Get the Key Vault resource ID:**
@@ -300,7 +300,7 @@ az role assignment create --assignee-object-id <MI_OID from Step 1> --assignee-p
 ```bash
 MI_OID=$(az datafactory show \
   --resource-group rg-ev-intelligence-dev \
-  --factory-name adf-ev-intelligence-dev \
+  --factory-name adf-ev-intelligence-dev-1551 \
   --query identity.principalId -o tsv)
 
 KV_ID=$(az keyvault show \
@@ -362,11 +362,11 @@ After the ADF pipeline runs, verify the output file exists and read it:
 
 ```python
 # List the output
-display(dbutils.fs.ls("abfss://bronze@evdatalakedev.dfs.core.windows.net/api/payments/raw/"))
+display(dbutils.fs.ls("abfss://bronze@evdatalakedev1551.dfs.core.windows.net/api/payments/raw/"))
 
 # Read the raw JSON
 df = spark.read.option("multiLine", "true").json(
-    "abfss://bronze@evdatalakedev.dfs.core.windows.net/api/payments/raw/payments.json"
+    "abfss://bronze@evdatalakedev1551.dfs.core.windows.net/api/payments/raw/payments.json"
 )
 display(df.limit(3))
 ```
@@ -407,16 +407,16 @@ ADF itself has no "stop" — it only runs when triggered. Pipelines are not runn
 ## Day 2 Checklist
 
 ### ADF Provisioning
-- [ ] ADF instance `adf-ev-intelligence-dev` created in `rg-ev-intelligence-dev` (Central India)
+- [ ] ADF instance `adf-ev-intelligence-dev-1551` created in `rg-ev-intelligence-dev` (Central India)
 - [ ] ADF Studio opens at `https://adf.azure.com`
 - [ ] ADF Managed Identity Object ID noted
-- [ ] `Storage Blob Data Contributor` role assigned to ADF Managed Identity on `evdatalakedev`
+- [ ] `Storage Blob Data Contributor` role assigned to ADF Managed Identity on `evdatalakedev1551`
 - [ ] `Key Vault Secrets User` role assigned to ADF Managed Identity on `kv-ev-intelligence-dev`
 
 ### ADF Linked Services
 - [ ] Linked service `ls_keyvault` created and tested — connects to `kv-ev-intelligence-dev`
 - [ ] Linked service `ls_voltgrid_api` created and tested — connects to VoltGrid API base URL
-- [ ] Linked service `ls_adls_bronze` created and tested — connects to `evdatalakedev` via Managed Identity
+- [ ] Linked service `ls_adls_bronze` created and tested — connects to `evdatalakedev1551` via Managed Identity
 
 ### Payments API Pipeline
 - [ ] Dataset `ds_voltgrid_payments_src` created — parameters `p_page`, `p_page_size`
@@ -438,7 +438,7 @@ ADF itself has no "stop" — it only runs when triggered. Pipelines are not runn
 
 | Error | Cause | Fix |
 |---|---|---|
-| `403 Forbidden` on ADF Copy Activity to ADLS | ADF Managed Identity missing `Storage Blob Data Contributor` on `evdatalakedev` | Part 2 — assign role, wait 2 min, retry |
+| `403 Forbidden` on ADF Copy Activity to ADLS | ADF Managed Identity missing `Storage Blob Data Contributor` on `evdatalakedev1551` | Part 2 — assign role, wait 2 min, retry |
 | `Access denied` when ADF reads Key Vault secret | ADF Managed Identity missing `Key Vault Secrets User` on Key Vault | Part 3 — assign role, wait 2 min, retry |
 | `401 Unauthorized` on `act_api_login` | Wrong credentials in Key Vault | Check `voltgrid-username` and `voltgrid-password` values |
 | `401 Unauthorized` on `act_copy_payments` | `v_token` not set — `act_api_login` output key wrong | Confirm login response has `token` key: check `act_api_login` output in Monitor |
