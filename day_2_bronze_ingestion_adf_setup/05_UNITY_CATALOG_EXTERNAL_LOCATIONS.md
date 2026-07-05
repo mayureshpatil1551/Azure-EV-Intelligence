@@ -5,9 +5,9 @@ Connect your ADLS Gen2 storage to Unity Catalog so you can browse Bronze / Silve
 
 This is what you already created (shown in the screenshot):
 - `cred-ev-intelligence-dev` — Storage Credential (Managed Identity)
-- `evdatalakedev-bronze` — External Location → `abfss://bronze@evdatalakedev.dfs.core.windows.net/`
-- `evdatalakedev-silver` — External Location → `abfss://silver@evdatalakedev.dfs.core.windows.net/`
-- `evdatalakedev-gold` — External Location → `abfss://gold@evdatalakedev.dfs.core.windows.net/`
+- `evdatalakedev1551-bronze` — External Location → `abfss://bronze@evdatalakedev1551.dfs.core.windows.net/`
+- `evdatalakedev1551-silver` — External Location → `abfss://silver@evdatalakedev1551.dfs.core.windows.net/`
+- `evdatalakedev1551-gold` — External Location → `abfss://gold@evdatalakedev1551.dfs.core.windows.net/`
 
 This file documents every step so students can reproduce it from scratch.
 
@@ -16,7 +16,7 @@ This file documents every step so students can reproduce it from scratch.
 ## How the Pieces Connect
 
 ```
-ADLS Gen2 Storage (evdatalakedev)
+ADLS Gen2 Storage (evdatalakedev1551)
          │
          │  IAM role: Storage Blob Data Contributor
          ▼
@@ -32,9 +32,9 @@ Storage Credential (cred-ev-intelligence-dev)
          │  one External Location per container
          ▼
 External Locations
-  evdatalakedev-bronze  →  abfss://bronze@evdatalakedev.dfs.core.windows.net/
-  evdatalakedev-silver  →  abfss://silver@evdatalakedev.dfs.core.windows.net/
-  evdatalakedev-gold    →  abfss://gold@evdatalakedev.dfs.core.windows.net/
+  evdatalakedev1551-bronze  →  abfss://bronze@evdatalakedev1551.dfs.core.windows.net/
+  evdatalakedev1551-silver  →  abfss://silver@evdatalakedev1551.dfs.core.windows.net/
+  evdatalakedev1551-gold    →  abfss://gold@evdatalakedev1551.dfs.core.windows.net/
          │
          ▼
 Volumes (optional — makes paths browsable in Catalog UI tree)
@@ -128,16 +128,16 @@ The Access Connector's Managed Identity needs `Storage Blob Data Contributor` on
 
 | Role | On | Required? |
 |---|---|---|
-| `Storage Blob Data Contributor` | `evdatalakedev` | Yes — needed for read/write/list/delete |
-| `Storage Account Contributor` | `evdatalakedev` | Optional — only for File Events |
+| `Storage Blob Data Contributor` | `evdatalakedev1551` | Yes — needed for read/write/list/delete |
+| `Storage Account Contributor` | `evdatalakedev1551` | Optional — only for File Events |
 | `EventGrid EventSubscription Contributor` | Resource group | Optional — only for File Events |
-| `Storage Queue Data Contributor` | `evdatalakedev` | Optional — only for File Events |
+| `Storage Queue Data Contributor` | `evdatalakedev1551` | Optional — only for File Events |
 
 > **File Events** = instant notifications when a file arrives in storage (instead of Databricks polling the folder). Useful for Auto Loader. For dev, skip the last 3 optional roles — Read/Write/List/Delete all work without them. If External Location creation shows a yellow "File Events failed" warning, click **Force create** — everything works, just without instant file notifications.
 
 ### 2.1 Via Azure Portal
 
-1. Portal → **Storage accounts** → `evdatalakedev`
+1. Portal → **Storage accounts** → `evdatalakedev1551`
 2. Left menu → **Access Control (IAM)**
 3. Click **+ Add** → **Add role assignment**
 4. **Role** tab: search `Storage Blob Data Contributor` → select → **Next**
@@ -159,7 +159,7 @@ Copy the output → `AC_PRINCIPAL_ID`
 
 **Step 2 — Get the storage account resource ID:**
 ```cmd
-az storage account show --name evdatalakedev --resource-group rg-ev-intelligence-dev --query id -o tsv
+az storage account show --name evdatalakedev1551 --resource-group rg-ev-intelligence-dev --query id -o tsv
 ```
 Copy the output → `STORAGE_ID`
 
@@ -176,7 +176,7 @@ AC_PRINCIPAL_ID=$(az databricks access-connector show \
   --query "identity.principalId" -o tsv)
 
 STORAGE_ID=$(az storage account show \
-  --name evdatalakedev \
+  --name evdatalakedev1551 \
   --resource-group rg-ev-intelligence-dev \
   --query id -o tsv)
 
@@ -253,8 +253,8 @@ Unity Catalog only works with `abfss://` (ADLS Gen2 with OAuth). `wasbs://` uses
 1. Databricks → **Catalog** → **External Data** → **External Locations**
 2. Click **+ Create location** → **Create location manually**
 3. Fill in:
-   - **External location name:** `evdatalakedev-bronze`
-   - **URL:** `abfss://bronze@evdatalakedev.dfs.core.windows.net/`
+   - **External location name:** `evdatalakedev1551-bronze`
+   - **URL:** `abfss://bronze@evdatalakedev1551.dfs.core.windows.net/`
    - **Storage credential:** select `cred-ev-intelligence-dev`
 4. Click **Create**
 5. An automatic test runs — expected results:
@@ -276,15 +276,15 @@ Unity Catalog only works with `abfss://` (ADLS Gen2 with OAuth). `wasbs://` uses
 
 | External location name | URL |
 |---|---|
-| `evdatalakedev-silver` | `abfss://silver@evdatalakedev.dfs.core.windows.net/` |
-| `evdatalakedev-gold` | `abfss://gold@evdatalakedev.dfs.core.windows.net/` |
+| `evdatalakedev1551-silver` | `abfss://silver@evdatalakedev1551.dfs.core.windows.net/` |
+| `evdatalakedev1551-gold` | `abfss://gold@evdatalakedev1551.dfs.core.windows.net/` |
 
 ### 4.2 Via Databricks CLI (optional)
 
 ```cmd
-databricks external-locations create --name evdatalakedev-bronze --url "abfss://bronze@evdatalakedev.dfs.core.windows.net/" --credential-name cred-ev-intelligence-dev
-databricks external-locations create --name evdatalakedev-silver --url "abfss://silver@evdatalakedev.dfs.core.windows.net/" --credential-name cred-ev-intelligence-dev
-databricks external-locations create --name evdatalakedev-gold   --url "abfss://gold@evdatalakedev.dfs.core.windows.net/"   --credential-name cred-ev-intelligence-dev
+databricks external-locations create --name evdatalakedev1551-bronze --url "abfss://bronze@evdatalakedev1551.dfs.core.windows.net/" --credential-name cred-ev-intelligence-dev
+databricks external-locations create --name evdatalakedev1551-silver --url "abfss://silver@evdatalakedev1551.dfs.core.windows.net/" --credential-name cred-ev-intelligence-dev
+databricks external-locations create --name evdatalakedev1551-gold   --url "abfss://gold@evdatalakedev1551.dfs.core.windows.net/"   --credential-name cred-ev-intelligence-dev
 ```
 
 **Verify all 3 External Locations:**
@@ -324,7 +324,7 @@ CREATE SCHEMA IF NOT EXISTS gold;
    > - External: points to your existing ADLS path — use this
    > - Managed: Databricks controls the storage path — for temporary data only
 
-   - **External location:** select `evdatalakedev-bronze`
+   - **External location:** select `evdatalakedev1551-bronze`
    - **Path:** leave blank (root of the container)
 4. Click **Create**
 
@@ -332,21 +332,21 @@ Repeat for silver and gold:
 
 | Volume name | Schema | External location |
 |---|---|---|
-| `bronze_volume` | `bronze` | `evdatalakedev-bronze` |
-| `silver_volume` | `silver` | `evdatalakedev-silver` |
-| `gold_volume` | `gold` | `evdatalakedev-gold` |
+| `bronze_volume` | `bronze` | `evdatalakedev1551-bronze` |
+| `silver_volume` | `silver` | `evdatalakedev1551-silver` |
+| `gold_volume` | `gold` | `evdatalakedev1551-gold` |
 
 ### Step 2 — Create Volumes via SQL (faster — run all at once)
 
 ```sql
 CREATE EXTERNAL VOLUME IF NOT EXISTS bronze.bronze_volume
-  LOCATION 'abfss://bronze@evdatalakedev.dfs.core.windows.net/';
+  LOCATION 'abfss://bronze@evdatalakedev1551.dfs.core.windows.net/';
 
 CREATE EXTERNAL VOLUME IF NOT EXISTS silver.silver_volume
-  LOCATION 'abfss://silver@evdatalakedev.dfs.core.windows.net/';
+  LOCATION 'abfss://silver@evdatalakedev1551.dfs.core.windows.net/';
 
 CREATE EXTERNAL VOLUME IF NOT EXISTS gold.gold_volume
-  LOCATION 'abfss://gold@evdatalakedev.dfs.core.windows.net/';
+  LOCATION 'abfss://gold@evdatalakedev1551.dfs.core.windows.net/';
 ```
 
 **Verify volumes are browsable:**
@@ -379,7 +379,7 @@ for container in ["bronze", "silver", "gold"]:
 
 ```python
 print("=== Write/Read/Delete test via External Location ===")
-test_path = "abfss://bronze@evdatalakedev.dfs.core.windows.net/_uc_test.txt"
+test_path = "abfss://bronze@evdatalakedev1551.dfs.core.windows.net/_uc_test.txt"
 try:
     dbutils.fs.put(test_path, "uc external location write test", overwrite=True)
     content = dbutils.fs.head(test_path)
@@ -396,10 +396,10 @@ except Exception as e:
 
 | Permission | Assigned to | On | Why |
 |---|---|---|---|
-| `Storage Blob Data Contributor` | Access Connector Managed Identity | `evdatalakedev` | Read + write + list + delete files in ADLS Gen2 — required for all External Location tests to pass |
-| `Storage Account Contributor` | Access Connector Managed Identity | `evdatalakedev` | File Events (optional) |
+| `Storage Blob Data Contributor` | Access Connector Managed Identity | `evdatalakedev1551` | Read + write + list + delete files in ADLS Gen2 — required for all External Location tests to pass |
+| `Storage Account Contributor` | Access Connector Managed Identity | `evdatalakedev1551` | File Events (optional) |
 | `EventGrid EventSubscription Contributor` | Access Connector Managed Identity | Resource group | File Events (optional) |
-| `Storage Queue Data Contributor` | Access Connector Managed Identity | `evdatalakedev` | File Events (optional) |
+| `Storage Queue Data Contributor` | Access Connector Managed Identity | `evdatalakedev1551` | File Events (optional) |
 
 ---
 
@@ -407,7 +407,7 @@ except Exception as e:
 
 | Error | Cause | Fix |
 |---|---|---|
-| External Location test: all checks fail with 403 | Access Connector missing `Storage Blob Data Contributor` on `evdatalakedev` | Part 2 — assign the role, wait 2 min, re-test |
+| External Location test: all checks fail with 403 | Access Connector missing `Storage Blob Data Contributor` on `evdatalakedev1551` | Part 2 — assign the role, wait 2 min, re-test |
 | External Location test: Read/Write ✅ but File Events ❌ | Access Connector missing the 3 optional EventGrid/Queue roles | Click **Force create** — location works fine without File Events. Add optional roles later if needed. |
 | `Access Connector not found` when creating Storage Credential | Resource ID has a typo | Re-run: `az databricks access-connector show ... --query id -o tsv` and paste exact output |
 | `Permission denied` creating Storage Credential | Databricks user is not Account admin | Go to `accounts.azuredatabricks.net` → User management → confirm Account admin role |
