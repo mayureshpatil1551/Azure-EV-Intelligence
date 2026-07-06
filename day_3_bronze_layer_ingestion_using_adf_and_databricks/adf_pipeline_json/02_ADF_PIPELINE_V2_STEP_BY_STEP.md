@@ -167,7 +167,7 @@ This dataset points to the Bronze container in ADLS Gen2. The path is dynamic �
 2. Click the activity to select it → in the bottom panel:
    - **General** tab → **Name:** `act_get_username`
 3. **Settings** tab:
-   - **URL:** `https://kv-ev-intelligence-dev.vault.azure.net/secrets/voltgrid-username/?api-version=7.0`
+   - **URL:** `https://kv-ev-int-dev.vault.azure.net/secrets/voltgrid-username/?api-version=7.0`
    - **Method:** GET
    - **Authentication:** System Assigned Managed Identity
    - **Resource:** `https://vault.azure.net`
@@ -182,7 +182,7 @@ This dataset points to the Bronze container in ADLS Gen2. The path is dynamic �
 2. **Name:** `act_get_password`
 3. Draw a connection: hover over `act_get_username` → green arrow appears on the right edge → drag it to `act_get_password` → select **Success**
 4. **Settings** tab:
-   - **URL:** `https://kv-ev-intelligence-dev.vault.azure.net/secrets/voltgrid-password/?api-version=7.0`
+   - **URL:** `https://kv-ev-int-dev.vault.azure.net/secrets/voltgrid-password/?api-version=7.0`
    - **Method:** GET
    - **Authentication:** System Assigned Managed Identity
    - **Resource:** `https://vault.azure.net`
@@ -426,11 +426,11 @@ bronze/api/payments/raw/
 
 ```python
 # List all partitions
-display(dbutils.fs.ls("abfss://bronze@evdatalakedev.dfs.core.windows.net/api/payments/raw/"))
+display(dbutils.fs.ls("abfss://bronze@evdatalakedev1551.dfs.core.windows.net/api/payments/raw/"))
 
 # Read one page
 df = spark.read.option("multiLine", "true").json(
-    "abfss://bronze@evdatalakedev.dfs.core.windows.net/api/payments/raw/ingestion_date=2026-07-05/page_1.json"
+    "abfss://bronze@evdatalakedev1551.dfs.core.windows.net/api/payments/raw/ingestion_date=2026-07-05/page_1.json"
 )
 display(df.limit(5))
 ```
@@ -447,7 +447,7 @@ display(df.limit(5))
 | Until loop runs only once | `v_total_pages` is 1 | Check `act_get_total_pages` output in Monitor → confirm `pagination.total_pages` key exists |
 | Incremental returns all records | `p_watermark` left blank | Always pass watermark date when `p_load_type = incremental` |
 | Self-reference error on page increment | Direct `v_current_page = v_current_page + 1` | Use two-variable pattern: `v_temp_page` then `v_current_page = v_temp_page` |
-| `act_copy_payments_page` fails with 403 | ADF MI missing `Storage Blob Data Contributor` on `evdatalakedev` | Portal → Storage → IAM → assign role, wait 2 min |
+| `act_copy_payments_page` fails with 403 | ADF MI missing `Storage Blob Data Contributor` on `evdatalakedev1551` | Portal → Storage → IAM → assign role, wait 2 min |
 
 ---
 
